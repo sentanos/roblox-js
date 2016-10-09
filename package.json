@@ -1,7 +1,7 @@
 {
   "name": "roblox-js",
   "version": "2.0.0",
-  "description": "A node module that provides an interface for performing actions on ROBLOX, mostly for use with their HTTPService feature.",
+  "description": "A node module that provides an interface for performing actions on ROBLOX, mostly for the use with their HTTPService feature.",
   "main": "lib/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
