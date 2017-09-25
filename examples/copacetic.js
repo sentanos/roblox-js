@@ -23,24 +23,24 @@ function clear () {
 }
 
 login()
-  .then(function () {
-    var evt = rbx.onForumPost(subforum);
-    evt.on('data', function (post) {
-      console.log(post);
-      var response;
-      var rand = Math.random();
-      if (rand < 0.3) {
-        response = 'Disagreed';
-      } else if (rand > 0.4 && rand < 0.45) {
-        response = 'The FitnessGram Pacer Test is a multistage aerobic capacity test that progressively gets more difficult as it continues.';
-      } else {
-        response = 'Agreed';
-      }
-      rbx.forumPost({postId: post.id, body: response + clear()});
-    });
-    evt.on('error', function (err) {
-      console.error('Event error: ' + err.stack);
-    });
+.then(function () {
+  var evt = rbx.onForumPost(subforum);
+  evt.on('data', function (post) {
+    console.log(post);
+    var response;
+    var rand = Math.random();
+    if (rand < 0.3) {
+      response = 'Disagreed';
+    } else if (rand > 0.4 && rand < 0.45) {
+      response = 'The FitnessGram Pacer Test is a multistage aerobic capacity test that progressively gets more difficult as it continues.';
+    } else {
+      response = 'Agreed';
+    }
+    rbx.forumPost({postId: post.id, body: response + clear()});
   });
+  evt.on('error', function (err) {
+    console.error('Event error: ' + err.stack);
+  });
+});
 
 setInterval(login, 86400000);
