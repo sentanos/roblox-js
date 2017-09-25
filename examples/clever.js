@@ -12,33 +12,33 @@ function login () {
 }
 
 login()
-.then(function () {
-  rbx.getCurrentUser()
-  .then(function (info) {
-    var id = info.UserID;
-    bot.create(function (err, session) {
-      if (err) {
-        return console.error('Cleverbot error: ' + session);
-      }
-      bot.setNick(session);
-      var evt = rbx.onWallPost(group);
-      evt.on('data', function (post) {
-        console.log(post);
-        if (post.author.id !== id) {
-          bot.ask(post.content, function (err, response) {
-            if (err) {
-              return console.error('Cleverbot error: ' + response);
+  .then(function () {
+    rbx.getCurrentUser()
+      .then(function (info) {
+        var id = info.UserID;
+        bot.create(function (err, session) {
+          if (err) {
+            return console.error('Cleverbot error: ' + session);
+          }
+          bot.setNick(session);
+          var evt = rbx.onWallPost(group);
+          evt.on('data', function (post) {
+            console.log(post);
+            if (post.author.id !== id) {
+              bot.ask(post.content, function (err, response) {
+                if (err) {
+                  return console.error('Cleverbot error: ' + response);
+                }
+                console.log(response);
+                rbx.post({group: group, message: response});
+              });
             }
-            console.log(response);
-            rbx.post({group: group, message: response});
           });
-        }
+          evt.on('error', function (err) {
+            console.error(err);
+          });
+        });
       });
-      evt.on('error', function (err) {
-        console.error(err);
-      });
-    });
   });
-});
 
 setInterval(login, 86400000);
