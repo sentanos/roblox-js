@@ -6,9 +6,11 @@ var stream = require('stream');
 var crypto = require('crypto');
 var fs = require('fs');
 var js = require('JSONStream');
+var transform = require('parallel-transform');
+
 var mainPath;
 
-var maxThreads = 5;
+var maxThreads = 10;
 
 prompt.message = '';
 var schema = {
@@ -76,12 +78,11 @@ function clearPage (group, page) {
 
 function processPage (group, page, author, find) {
   var posts = page.posts;
+  find = find.toLowerCase();
   var indices = [];
   for (var i = 0; i < posts.length; i++) {
     var post = posts[i];
-    if (!author || post.author.name === author) {
-      indices.push(i);
-    } else if (!find || post.content.includes(find)) {
+    if ((!author && !find) || (author && post.author.name === author) || (find && post.content.toLowerCase().includes(find))) {
       indices.push(i);
     }
   }
@@ -93,21 +94,29 @@ function processPage (group, page, author, find) {
 
 function clear (group, path, total) {
   var deletePosts = new ProgressBar('Deleting posts [:bar] :current/:total = :percent :etas remaining ', {total: total});
+  var complete = 0;
 
-  var clearStream = new stream.Writable({
-    objectMode: true,
-    highWaterMark: maxThreads
-  });
-  clearStream._write = function (chunk, encoding, done) {
+  function next () {
+    console.timeEnd('Time: ');
+  }
+
+  var clearStream = transform(maxThreads, {objectMode: true}, function (chunk, done) {
+    var len = chunk.indices.length;
     clearPage(group, chunk)
     .then(function () {
-      deletePosts.tick(chunk.indices.length);
+      deletePosts.tick(len);
+      complete += len;
     })
     .catch(function (err) {
       console.error('Clear page error: ' + err.message);
     })
-    .then(done);
-  };
+    .then(function () {
+      done();
+      if (complete >= total) {
+        next();
+      }
+    });
+  });
   clearStream.on('error', function (err) {
     console.error('Delete post stream error: ' + err.message);
   });
@@ -117,11 +126,7 @@ function clear (group, path, total) {
 
   console.time('Time: ');
 
-  var pipeline = read.pipe(parse).pipe(clearStream);
-
-  pipeline.on('finish', function () {
-    console.timeEnd('Time: ');
-  });
+  read.pipe(parse).pipe(clearStream);
 }
 
 function get (group, find, author, startPage, endPage) {
@@ -150,8 +155,13 @@ function get (group, find, author, startPage, endPage) {
       high = chunk.page;
     }
     var response = processPage(group, chunk, author, find);
-    total += response.indices.length;
-    done(null, response);
+    var len = response.indices.length;
+    total += len;
+    var res = response;
+    if (len === 0) {
+      res = null;
+    }
+    done(null, res);
     chunk = null;
     response = null;
   };
@@ -159,7 +169,7 @@ function get (group, find, author, startPage, endPage) {
     console.error('Stream processing error: ' + err.message);
   });
 
-  var path = './roblox-js-wall.' + crypto.randomBytes(20).toString('hex') + '.temp';
+  var path = './roblox-js-wall.' + crypto.randomBytes(10).toString('hex') + '.temp';
   mainPath = path;
   var write = fs.createWriteStream(path);
   var stringify = js.stringify('[\n', ',\n', '\n]\n');
@@ -202,7 +212,7 @@ function init (group, username, password, find, author, startPage, endPage) {
       return;
     }
     console.log('You are about to delete ' + response.total + ' wall posts selected from ' + (startPage && endPage ? ('page ' + startPage + ' to ' + endPage) : ('ALL pages')));
-    console.log('The list starts from the post "' + response.first.content.substring(20) + '..." and ends with the post "' + response.last.content.substring(20) + '..."');
+    console.log('The list starts from the post "' + response.first.content.substring(0, 20) + '..." and ends with the post "' + response.last.content.substring(0, 20) + '..."');
     prompt.get({
       name: 'yesno',
       message: 'Are you sure you want to do this? y/n',
