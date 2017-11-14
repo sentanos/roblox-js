@@ -13,7 +13,7 @@ Roblox-js is a node module that provides an interface for [ROBLOX](http://www.ro
 
 Most functions are related to group service but there are other general functions as well. The list of main functions is in the contents section, they all have detailed documentation.
 
-To use this with HttpService simply set up API's on your node server for accessing the functions, you can use the example server outlined in the example server section as a base. Note that this does not use the latest version of the module and its recommended you learn how to use the library directly.
+To use this with HttpService simply set up API's on your node server for accessing the functions, you can use the example server outlined in the example server section as a base. Note that this does not use the latest version of the module and it's recommended you learn how to use the library directly.
 
 There are also a few example scripts with version 3 support in the [examples](https://github.com/sentanos/roblox-js/tree/master/examples) folder.
 
