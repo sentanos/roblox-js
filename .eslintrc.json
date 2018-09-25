@@ -1,0 +1,13 @@
+{
+  "extends": "semistandard",
+  "rules": {
+    "indent": [
+      "error", 
+      2,
+      {
+        "MemberExpression": 0,
+        "SwitchCase": 1
+      }
+    ]
+  }
+}
